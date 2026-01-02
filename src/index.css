@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+@layer components {
+  .spinner-bar {
+    @apply absolute left-1/2 top-0 origin-bottom rounded-full opacity-0;
+    animation: spinner-fade 1.2s linear infinite;
+    height: var(--bar-height);
+    width: var(--bar-width);
+    transform: translateX(-50%) rotate(var(--rotate));
+    transform-origin: 50% var(--center-offset);
+  }
+
+  @keyframes spinner-fade {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
