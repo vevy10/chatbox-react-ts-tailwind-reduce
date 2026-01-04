@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           user: res.user
         }
       })
-      navigate('/dashboard')
+      navigate('/chat')
     } catch (err: any) {
       dispatch({ type: 'AUTH_ERROR', payload: err.message })
     }

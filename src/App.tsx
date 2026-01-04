@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { LoginPage } from './pages/Login'
 import { SignupPage } from './pages/Signup'
+import { ChatPage } from './pages/ChatPage'
 import { DashboardPage } from './pages/Dashboard'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AppLayout } from './components/layouts/AppLayout'
@@ -23,6 +24,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
                 </ProtectedRoute>
               } 
             />
