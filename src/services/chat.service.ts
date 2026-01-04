@@ -1,6 +1,6 @@
-import { type Message } from '../types/chat.type';
+import { type Message } from '../types/chat.type'
 
-const API_URL = 'http://127.0.0.1:8000/chat';
+const API_URL = 'http://127.0.0.1:8000/chat'
 
 export async function sendMessage(
   token: string, 
@@ -19,7 +19,7 @@ export async function sendMessage(
       receiver_id: receiverId, 
       content 
     }),
-  });
+  })
 
   if (!res.ok) {
     const error = await res.json();
@@ -27,12 +27,12 @@ export async function sendMessage(
     throw new Error('Erreur lors de l\'envoi du message');
   }
 
-  return res.json();
+  return res.json()
 }
 
 export async function getChatHistory(token: string, friendId: number): Promise<Message[]> {
   const res = await fetch(`${API_URL}/history/${friendId}`, {
     headers: { 'Authorization': `Bearer ${token}` },
-  });
-  return res.json();
+  })
+  return res.json()
 }
