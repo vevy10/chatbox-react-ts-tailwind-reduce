@@ -3,7 +3,7 @@ import { LayoutDashboard, LogOut, ShieldCheck, Key, User, Camera, Mail, Phone } 
 import { useRef } from 'react'
 
 export const DashboardPage = () => {
-  const { token, logout, user, updatePhoto } = useAuth()
+  const { token, logout, user, updatePhoto, removePhoto } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handlePhotoClick = () => {
@@ -61,6 +61,15 @@ export const DashboardPage = () => {
                 onChange={handleFileChange} 
               />
             </div>
+
+            {user?.profile_photo && (
+                <button 
+                  onClick={() => removePhoto(user.id)}
+                  className="mt-2 text-xs text-red-300 hover:text-red-500 underline cursor-pointer"
+                >
+                  Supprimer la photo
+                </button>
+              )}
             
             <h3 className="text-2xl font-semibold text-white">
               {user?.first_name || 'Utilisateur'} {user?.last_name || ''}

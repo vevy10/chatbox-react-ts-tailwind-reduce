@@ -1,13 +1,13 @@
 import { createContext, useContext, useReducer, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { loginUser, registerUser } from '../services/auth.service'
-import { type LoginData, type RegisterData, type AuthState } from '../types/auth.type'
+import { loginUser, registerUser, uploadProfilePhoto, deleteProfilePhoto } from '../services/auth.service'
+import { type LoginData, type RegisterData, type AuthState, type User } from '../types/auth.type'
 
 type AuthAction = 
   | { type: 'AUTH_START' }
-  | { type: 'AUTH_SUCCESS'; payload: string }
+  | { type: 'AUTH_SUCCESS'; payload: { token: string; user: User } }
   | { type: 'AUTH_ERROR'; payload: string }
-  | { type: 'REGISTER_SUCCESS' } // Nouvelle action
+  | { type: 'REGISTER_SUCCESS' }
   | { type: 'LOGOUT' }
 
 const AuthContext = createContext<any>(null)
@@ -22,8 +22,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       };
     case 'AUTH_SUCCESS': 
       return { 
-        token: action.payload, 
-        user: null, // On l'initialise à null ou on le chargera plus tard via une autre action
+        token: action.payload.token, 
+        user: action.payload.user,
         loading: false, 
         error: null 
       };
@@ -42,7 +42,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
     case 'LOGOUT': 
       return { 
         token: null, 
-        user: null, // On vide l'utilisateur à la déconnexion
+        user: null,
         loading: false, 
         error: null 
       };
@@ -52,40 +52,44 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const savedUser = localStorage.getItem('user_data')
   const [state, dispatch] = useReducer(authReducer, { 
     token: localStorage.getItem('access_token'), 
-    user: null,    // <-- AJOUTÉ ICI
+    user: savedUser ? JSON.parse(savedUser) : null,
     loading: false, 
     error: null 
   })
   
-  // ... reste du code (login, register, logout)
   const navigate = useNavigate()
 
-  // --- LOGIN ---
   const login = async (data: LoginData) => {
     dispatch({ type: 'AUTH_START' })
     try {
       const res = await loginUser(data)
+      console.log("Réponse API Login:", res)
       
-      // Stockage local pour persistance
       localStorage.setItem('access_token', res.access_token)
       localStorage.setItem('refresh_token', res.refresh_token)
+      localStorage.setItem('user_data', JSON.stringify(res.user))
       
-      dispatch({ type: 'AUTH_SUCCESS', payload: res.access_token })
+      dispatch({ 
+        type: 'AUTH_SUCCESS', 
+        payload: { 
+          token: res.access_token, 
+          user: res.user
+        }
+      })
       navigate('/dashboard')
     } catch (err: any) {
       dispatch({ type: 'AUTH_ERROR', payload: err.message })
     }
   }
 
-  // --- REGISTER ---
   const register = async (data: RegisterData) => {
     dispatch({ type: 'AUTH_START' })
     try {
       await registerUser(data)
       dispatch({ type: 'REGISTER_SUCCESS' })
-      // On redirige vers login car l'user doit se connecter (ou confirmer email)
       navigate('/login', { state: { message: "Inscription réussie ! Connectez-vous." } })
     } catch (err: any) {
       dispatch({ type: 'AUTH_ERROR', payload: err.message })
@@ -95,12 +99,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
     dispatch({ type: 'LOGOUT' })
     navigate('/login')
   }
 
+  const updatePhoto = async (userId: string, file: File) => {
+    try {
+      const res = await uploadProfilePhoto(Number(userId), file)
+      
+      const updatedUser = { ...state.user, profile_photo: res.path }
+      
+      localStorage.setItem('user_data', JSON.stringify(updatedUser))
+      dispatch({ 
+        type: 'AUTH_SUCCESS', 
+        payload: { token: state.token!, user: updatedUser } 
+      });
+    } catch (err: any) {
+      console.error(err.message)
+    }
+  }
+
+  const removePhoto = async (userId: string) => {
+    try {
+      await deleteProfilePhoto(Number(userId))
+      
+      if (state.user) {
+        const updatedUser = { ...state.user, profile_photo: null }
+        localStorage.setItem('user_data', JSON.stringify(updatedUser))
+        
+        dispatch({ 
+          type: 'AUTH_SUCCESS', 
+          payload: { token: state.token!, user: updatedUser } 
+        })
+      }
+    } catch (err: any) {
+      console.error(err.message)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, updatePhoto, removePhoto }}>
       {children}
     </AuthContext.Provider>
   )

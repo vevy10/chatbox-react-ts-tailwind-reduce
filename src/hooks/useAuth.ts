@@ -6,7 +6,7 @@ export function useAuth() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false) // Pour savoir si l'inscription a réussi
+  const [success, setSuccess] = useState(false)
 
   const register = async (data: RegisterData) => {
     setLoading(true)
@@ -15,7 +15,6 @@ export function useAuth() {
     try {
       await registerUser(data)
       setSuccess(true)
-      // Note: Le backend renvoie {"message": "..."}, on n'enregistre pas de token ici
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l’inscription')
     } finally {
@@ -29,7 +28,6 @@ export function useAuth() {
     try {
       const res: TokenResponse = await loginUser(data)
       setToken(res.access_token)
-      // Persistance locale simple
       localStorage.setItem('token', res.access_token)
       localStorage.setItem('refresh_token', res.refresh_token)
     } catch (err: unknown) {
@@ -44,7 +42,6 @@ export function useAuth() {
     localStorage.clear()
   }
 
-  // Optionnel: Ajouter une fonction pour la photo directement dans le hook
   const updatePhoto = async (userId: number, file: File) => {
     setLoading(true)
     try {

@@ -1,3 +1,12 @@
+export interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  profile_photo?: string;
+}
+
 export interface RegisterData {
   first_name: string;
   last_name: string;
@@ -16,6 +25,7 @@ export interface TokenResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
+  user: User;
 }
 
 export interface AuthState {

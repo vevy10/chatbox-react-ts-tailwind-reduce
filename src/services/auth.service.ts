@@ -29,17 +29,26 @@ export async function loginUser(data: LoginData): Promise<TokenResponse> {
 }
 
 export async function uploadProfilePhoto(userId: number, file: File): Promise<{ path: string }> {
-  const formData = new FormData();
-  formData.append('file', file);
+  const formData = new FormData()
+  formData.append('file', file)
 
   const res = await fetch(`${API_URL}/upload-photo/${userId}`, {
     method: 'POST',
     body: formData, 
-  });
+  })
 
   if (!res.ok) throw new Error('Erreur lors de l’upload de la photo');
 
-  return res.json();
+  return res.json()
+}
+
+export async function deleteProfilePhoto(userId: number): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/delete-photo/${userId}`, {
+    method: 'DELETE',
+  })
+
+  if (!res.ok) throw new Error('Erreur lors de la suppression de la photo')
+  return res.json()
 }
 
 export async function forgotPassword(identifier: string): Promise<{ message: string }> {
